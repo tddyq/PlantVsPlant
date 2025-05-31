@@ -88,7 +88,7 @@ Scene* menu_scene = nullptr;              // 主菜单场景指针
 Scene* game_scene = nullptr;              // 游戏场景指针
 Scene* selector_scene = nullptr;          // 选角场景指针
 SceneManager scene_manager;               // 场景管理器对象
-
+Camera main_camera;                       // 主摄像机对象
 int main() {
     ExMessage msg;
     const int FPS = 60;
@@ -119,7 +119,7 @@ int main() {
         last_tick_time = current_tick_time;
 
         cleardevice();  
-        scene_manager.on_draw();
+        scene_manager.on_draw(main_camera);
         FlushBatchDraw();
 
         DWORD frame_end_time = GetTickCount();

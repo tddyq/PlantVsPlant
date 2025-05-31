@@ -101,6 +101,7 @@ extern Scene* menu_scene;              // 主菜单场景指针
 extern Scene* game_scene;              // 游戏场景指针
 extern Scene* selector_scene;          // 选角场景指针
 extern SceneManager scene_manager;               // 场景管理器对象
+extern Camera main_camera;                // 主摄像机对象
 
 inline void flip_image(IMAGE* src, IMAGE* dst);
 void flip_atlas(Atlas& src, Atlas& dst);

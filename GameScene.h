@@ -13,7 +13,7 @@ public:
 	void on_update(int delta) {
 		std::cout << "游戏正在运行..." << std::endl;
 	}
-	void on_draw() {
+	void on_draw(const Camera& camera) {
 		outtextxy(10, 10, _T("游戏内绘图内容"));
 	}
 	void on_input(const ExMessage& msg) {

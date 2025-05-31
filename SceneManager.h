@@ -41,8 +41,8 @@ public:
 	void on_update(int delta) {
 		current_scene->on_update(delta);
 	}
-	void on_draw() {
-		current_scene->on_draw();
+	void on_draw(const Camera& camera) {
+		current_scene->on_draw(camera);
 	}
 	void on_input(const ExMessage& msg) {
 		current_scene->on_input(msg);
