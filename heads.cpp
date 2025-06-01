@@ -31,6 +31,19 @@ void putimage_alpha(int x, int y, IMAGE* img) {
 		GetImageHDC(img), 0, 0, w, h, { AC_SRC_OVER,0,255,AC_SRC_ALPHA });
 
 }
+void putimage_alpha(const Camera& camera, int x, int y, IMAGE* img) {
+	int w = img->getwidth();
+	int h = img->getheight();
+	const Vector2& pos_camera = camera.get_position();
+	AlphaBlend(GetImageHDC(GetWorkingImage()), x - pos_camera.x, y - pos_camera.y , w, h,
+		GetImageHDC(img), 0, 0, w, h, { AC_SRC_OVER,0,255,AC_SRC_ALPHA });
+}
+void putimage_alpha(int dst_x, int dst_y, int width, int height, IMAGE* img, int src_x, int src_y) {
+	int w = width > 0 ? width : img->getheight();
+	int h = height > 0 ? height : img->getheight();
+	AlphaBlend(GetImageHDC(NULL), dst_x, dst_y, w, h,
+		GetImageHDC(img), src_x, src_y, w, h, { AC_SRC_OVER,0,255,AC_SRC_ALPHA });
+}
 //╪стьм╪ф╛
 void load_game_resources() {
 	//============================ вжлЕ╪сть ============================//

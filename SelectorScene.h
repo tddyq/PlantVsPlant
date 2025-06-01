@@ -44,7 +44,7 @@ extern IMAGE img_sunflower_selector_background_right;  // 选角界面朝向右的龙日葵
 extern SceneManager scene_manager;               // 场景管理器对象
 extern Atlas atlas_sunflower_idle_right;         // 龙日葵朝向右的默认动画图集
 extern Atlas atlas_peashooter_idle_right;        // 豌豆射手朝向右的默认动画图集
-
+extern void putimage_alpha(int dst_x, int dst_y, int width, int height, IMAGE* img, int src_x, int src_y);
 class SelectorScene : public Scene 
 {
 public:
@@ -106,10 +106,50 @@ public:
 		pos_2P_selector_btn_right.x = pos_img_2P_gravestone.x + img_gravestone_left.getwidth();
 		pos_2P_selector_btn_right.y = pos_2P_selector_btn_left.y;
 	}
-	void on_update(int delta) {}
+	void on_update(int delta) {
+		animation_peashooter.on_update(delta);
+		animation_sunflower.on_update(delta);
+
+		selector_background_scroll_offset_x += 5;   	//角色背景滚动偏移量
+		if (selector_background_scroll_offset_x >= img_peashooter_selector_background_left.getwidth()) {
+			selector_background_scroll_offset_x = 0; // 重置偏移量
+		}
+	}
 	void on_draw(const Camera& camera) {
+		IMAGE* img_p1_selector_background = nullptr;
+		IMAGE* img_p2_selector_background = nullptr;
+		switch (player_type_2) {
+		case PlayerType::Peashooter:
+			img_p1_selector_background = &img_peashooter_selector_background_right;
+			break;
+		case PlayerType::Sunflower:	
+			img_p1_selector_background = &img_sunflower_selector_background_right;
+			break;
+		default:
+			img_p1_selector_background = &img_peashooter_selector_background_right;
+			break;
+		}
+		switch (player_type_1) {
+		case PlayerType::Peashooter:
+			img_p2_selector_background = &img_peashooter_selector_background_left;
+			break;
+		case PlayerType::Sunflower:
+			img_p2_selector_background = &img_sunflower_selector_background_left;
+			break;
+		default:
+			img_p2_selector_background = &img_sunflower_selector_background_left;
+			break;
+		}
 		// 绘制选择界面背景（全屏覆盖）
 		putimage(0, 0, &img_selector_background);
+
+		putimage_alpha(selector_background_scroll_offset_x - img_p1_selector_background->getwidth(), 0, img_p1_selector_background);
+		putimage_alpha(selector_background_scroll_offset_x, 0,
+			img_p1_selector_background->getwidth() - selector_background_scroll_offset_x, 0, img_p1_selector_background, 0, 0);
+		putimage_alpha(getwidth() - img_p2_selector_background->getwidth(), 0,
+			img_p2_selector_background->getwidth() - selector_background_scroll_offset_x, 0, img_p2_selector_background, selector_background_scroll_offset_x,0);
+		putimage_alpha(getwidth() - selector_background_scroll_offset_x, 0, img_p2_selector_background);
+
 
 		// 绘制VS标志（居中）
 		putimage_alpha(pos_img_VS.x, pos_img_VS.y, &img_VS);
@@ -122,6 +162,40 @@ public:
 		putimage_alpha(pos_img_1P_gravestone.x, pos_img_1P_gravestone.y, &img_gravestone_right);
 		putimage_alpha(pos_img_2P_gravestone.x, pos_img_2P_gravestone.y, &img_gravestone_left);
 
+		switch (player_type_1) {
+		
+		case PlayerType::Peashooter:
+			animation_peashooter.on_draw(camera, pos_animation_1P.x, pos_animation_1P.y);
+			pos_img_1P_name.x = pos_img_1P_gravestone.x + (img_gravestone_right.getwidth() - textwidth(str_peashooter_name)) / 2;
+			outtextxy_shaded(pos_img_1P_name.x, pos_img_1P_name.y, str_peashooter_name);
+			break;
+		case PlayerType::Sunflower:
+			animation_sunflower.on_draw(camera, pos_animation_1P.x, pos_animation_1P.y);
+			pos_img_1P_name.x = pos_img_1P_gravestone.x + (img_gravestone_right.getwidth() - textwidth(str_sunflower_name)) / 2;
+			outtextxy_shaded(pos_img_1P_name.x, pos_img_1P_name.y, str_sunflower_name);
+			break;
+		}
+		switch (player_type_2) {
+		case PlayerType::Peashooter:
+			animation_peashooter.on_draw(camera, pos_animation_2P.x, pos_animation_2P.y);
+			pos_img_2P_name.x = pos_img_2P_gravestone.x + (img_gravestone_right.getwidth() - textwidth(str_peashooter_name)) / 2;
+			outtextxy_shaded(pos_img_2P_name.x, pos_img_2P_name.y, str_peashooter_name);
+			break;
+		case PlayerType::Sunflower:
+			animation_sunflower.on_draw(camera, pos_animation_2P.x, pos_animation_2P.y);
+			pos_img_2P_name.x = pos_img_2P_gravestone.x + (img_gravestone_right.getwidth() - textwidth(str_sunflower_name)) / 2;
+			outtextxy_shaded(pos_img_2P_name.x, pos_img_2P_name.y, str_sunflower_name);
+		}
+		
+		putimage_alpha(pos_1P_selector_btn_left.x, pos_1P_selector_btn_left.y,
+			is_btn_1P_left_down ? &img_1P_selector_btn_down_left : &img_1P_selector_btn_idle_left);
+		putimage_alpha(pos_1P_selector_btn_right.x, pos_1P_selector_btn_right.y,
+			is_btn_1P_right_down ? &img_1P_selector_btn_down_right : &img_1P_selector_btn_idle_right);
+		putimage_alpha(pos_2P_selector_btn_left.x, pos_2P_selector_btn_left.y,
+			is_btn_2P_left_down ? &img_2P_selector_btn_down_left : &img_2P_selector_btn_idle_left);
+		putimage_alpha(pos_2P_selector_btn_right.x, pos_2P_selector_btn_right.y,
+			is_btn_2P_left_down ? &img_2P_selector_btn_down_right : &img_2P_selector_btn_idle_right);
+
 		// 绘制玩家控制说明（屏幕底部）
 		putimage_alpha(pos_img_1P_desc.x, pos_img_1P_desc.y, &img_1P_desc);
 		putimage_alpha(pos_img_2P_desc.x, pos_img_2P_desc.y, &img_2P_desc);
@@ -129,8 +203,78 @@ public:
 		// 绘制选择提示（屏幕底部居中）
 		putimage_alpha(pos_img_tip.x, pos_img_tip.y, &img_selector_tip);
 	}
-	void on_input(const ExMessage& msg) {}
+	void on_input(const ExMessage& msg) {
+		switch (msg.message) {
+		case WM_KEYDOWN:
+			switch (msg.vkcode) {
+			//'A'
+			case 0x41:
+				is_btn_1P_left_down = true; // 1P 向左按钮按下
+				break;
+			//'D'
+			case 0x44:
+				is_btn_1P_right_down = true; // 1P 向右按钮按下
+				break;
+			//'←'
+			case VK_LEFT:
+				is_btn_2P_left_down = true; // 2P 向左按钮按下
+				break;
+			//'→'
+			case VK_RIGHT:		
+				is_btn_2P_right_down = true; // 2P 向右按钮按下
+				break;
+			}
+			break;
+		default:
+			break;
+		}
+		switch (msg.message) {
+		case WM_KEYUP:
+			switch (msg.vkcode) {
+				//'A'
+			case 0x41:
+				is_btn_1P_left_down = false; // 1P 向左按钮抬起
+				player_type_1 = (PlayerType)(((int)PlayerType::Invaild + (int)player_type_1 - 1) % (int)PlayerType::Invaild); // 切换 1P 角色类型
+				mciSendString(_T("play ui_switch from 0"), NULL, 0, NULL); // 播放切换音效
+				break;
+				//'D'
+			case 0x44:
+				is_btn_1P_right_down = false; // 1P 向右按钮抬起
+				player_type_1 = (PlayerType)(((int)PlayerType::Invaild + (int)player_type_1 + 1) % (int)PlayerType::Invaild); // 切换 1P 角色类型
+				mciSendString(_T("play ui_switch from 0"), NULL, 0, NULL); // 播放切换音效
+				break;
+				//'←'
+			case VK_LEFT:
+				is_btn_2P_left_down = false; // 2P 向左按钮抬起
+				player_type_2 = (PlayerType)(((int)PlayerType::Invaild + (int)player_type_2 - 1) % (int)PlayerType::Invaild); // 切换 2P 角色类型
+				mciSendString(_T("play ui_switch from 0"), NULL, 0, NULL); // 播放切换音效
+				break;
+				//'→'
+			case VK_RIGHT:
+				is_btn_2P_right_down = false; // 2P 向右按钮抬起
+				player_type_2 = (PlayerType)(((int)PlayerType::Invaild + (int)player_type_2 + 1) % (int)PlayerType::Invaild); // 切换 2P 角色类型
+				mciSendString(_T("play ui_switch from 0"), NULL, 0, NULL); // 播放切换音效
+				break;
+			case VK_RETURN: // 回车键确认选择
+				scene_manager.switch_to(SceneManager::SceneType::Game);
+				mciSendString(_T("play ui_switch from 0"), NULL, 0, NULL); // 播放切换音效
+				break;
+			}
+			break;
+		default:
+			break;
+		}
+	}
 	void on_exit() {}
+private:
+	enum class PlayerType {
+		Peashooter = 0,
+		Sunflower,
+		Invaild
+	};
+
+
+
 private:
 	POINT pos_img_VS = { 0 };               // VS 艺术字图片位置
 	POINT pos_img_tip = { 0 };              // 提示信息文本图片位置
@@ -151,5 +295,34 @@ private:
 
 	Animation animation_peashooter;          // 豌豆射手动画 
 	Animation animation_sunflower;           // 向日葵动画
+	
+	PlayerType player_type_1 = PlayerType::Peashooter; // 1P 角色类型
+	PlayerType player_type_2 = PlayerType::Sunflower;  // 2P 角色类型
+
+	LPCTSTR str_peashooter_name = _T("婉豆射手"); // 婉豆射手角色名称
+	LPCTSTR str_sunflower_name = _T("龙日葵");    // 龙日葵角色名称	
+
+	int selector_background_scroll_offset_x = 0; // 选角界面背景滚动偏移量
+
+	bool is_btn_1P_left_down = false;  // 1P 向左按钮按下状态
+	bool is_btn_1P_right_down = false; // 1P 向右按钮按下状态
+	bool is_btn_2P_left_down = false;  // 2P 向左按钮按下状态
+	bool is_btn_2P_right_down = false; // 2P 向右按钮按下状态
+
+private:
+	/*
+	* 绘制带阴影的文本
+	 * @param x: 文本左上角的 x 坐标
+	 * @param y: 文本左上角的 y 坐标
+	 * @param str: 要绘制的文本字符串
+
+	*/
+	void outtextxy_shaded(int x, int y, LPCTSTR str) {
+		settextcolor(RGB(45, 45, 45));
+		outtextxy(x + 3, y + 3, str);
+		settextcolor(RGB(255, 255, 255));	
+		outtextxy(x, y, str);
+	}
+
 };
 

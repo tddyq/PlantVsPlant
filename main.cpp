@@ -94,6 +94,11 @@ int main() {
     const int FPS = 60;
 
     initgraph(1280, 720);
+    
+    settextstyle(28, 0, _T("IPix"));
+	setbkmode(TRANSPARENT);
+
+
     load_game_resources();
     BeginBatchDraw();
 

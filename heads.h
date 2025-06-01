@@ -106,4 +106,6 @@ extern Camera main_camera;                // 主摄像机对象
 inline void flip_image(IMAGE* src, IMAGE* dst);
 void flip_atlas(Atlas& src, Atlas& dst);
 void putimage_alpha(int x, int y, IMAGE* img);   //播放动画
+void putimage_alpha(const Camera& camera,int x, int y, IMAGE* img);   //播放动画
+void putimage_alpha(int dst_x, int dst_y, int width, int height, IMAGE* img, int src_x, int src_y);
 void load_game_resources();
