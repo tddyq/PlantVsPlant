@@ -16,6 +16,9 @@
     <Filter Include="头文件\Scene">
       <UniqueIdentifier>{01e672ab-610a-473c-bb83-907ef270315c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="头文件\Player">
+      <UniqueIdentifier>{fc4a466a-b127-4742-bd17-ed17d665bdd5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -61,6 +64,18 @@
     </ClInclude>
     <ClInclude Include="Platform.h">
       <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Player.h">
+      <Filter>头文件\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="sunflower_player.h">
+      <Filter>头文件\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="peashooter_player.h">
+      <Filter>头文件\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerID.h">
+      <Filter>头文件\Player</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,6 +1,9 @@
 #pragma once
 #include"Scene.h"
 #include"MenuScene.h"
+#include"peashooter_player.h"
+#include"sunflower_player.h"
+#include"PlayerID.h"
 // 主菜单与选角界面
 extern IMAGE img_menu_background;                // 主菜单背景图片
 extern IMAGE img_VS;                             // VS 艺术字图片
@@ -44,6 +47,9 @@ extern IMAGE img_sunflower_selector_background_right;  // 选角界面朝向右的龙日葵
 extern SceneManager scene_manager;               // 场景管理器对象
 extern Atlas atlas_sunflower_idle_right;         // 龙日葵朝向右的默认动画图集
 extern Atlas atlas_peashooter_idle_right;        // 豌豆射手朝向右的默认动画图集
+extern Player* player_1; // 玩家1
+extern Player* player_2; // 玩家2
+
 extern void putimage_alpha(int dst_x, int dst_y, int width, int height, IMAGE* img, int src_x, int src_y);
 class SelectorScene : public Scene 
 {
@@ -52,6 +58,7 @@ public:
 	~SelectorScene() = default;
 
 	void on_enter() {
+
 		animation_peashooter.set_atlas(&atlas_peashooter_idle_right);
 		animation_sunflower.set_atlas(&atlas_sunflower_idle_right);
 		animation_peashooter.set_interval(100);
@@ -265,7 +272,25 @@ public:
 			break;
 		}
 	}
-	void on_exit() {}
+	void on_exit() {
+		switch (player_type_1) {
+		case PlayerType::Peashooter:
+			player_1 = new peashooter_player();
+			break;
+		case PlayerType::Sunflower:
+			player_1 = new sunflower_player();
+		}
+		player_1->set_id(PlayerID::P1);
+
+		switch (player_type_2) {
+		case PlayerType::Peashooter:
+			player_2 = new peashooter_player();
+			break;
+		case PlayerType::Sunflower:
+			player_2 = new sunflower_player();
+		}
+		player_2->set_id(PlayerID::P2);
+	}
 private:
 	enum class PlayerType {
 		Peashooter = 0,

@@ -137,10 +137,14 @@
     <ClInclude Include="GameScene.h" />
     <ClInclude Include="heads.h" />
     <ClInclude Include="MenuScene.h" />
+    <ClInclude Include="peashooter_player.h" />
     <ClInclude Include="Platform.h" />
+    <ClInclude Include="Player.h" />
+    <ClInclude Include="PlayerID.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneManager.h" />
     <ClInclude Include="SelectorScene.h" />
+    <ClInclude Include="sunflower_player.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="Vector2.h" />
   </ItemGroup>

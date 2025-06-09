@@ -12,6 +12,7 @@
 #include"SelectorScene.h"
 #include"Platform.h"
 #include"Atlas.h"
+#include"Player.h"
 
 // 主菜单与选角界面
 extern IMAGE img_menu_background;                // 主菜单背景图片
@@ -104,6 +105,8 @@ extern SceneManager scene_manager;               // 场景管理器对象
 extern Camera main_camera;                // 主摄像机对象
 
 extern std::vector<Platform> platform_list; // 平台列表
+extern Player* player_1; // 玩家1
+extern Player* player_2; // 玩家2
 
 inline void flip_image(IMAGE* src, IMAGE* dst);
 void flip_atlas(Atlas& src, Atlas& dst);

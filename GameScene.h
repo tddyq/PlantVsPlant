@@ -1,5 +1,5 @@
 #pragma once
-
+#include"Player.h"
 #include<iostream>
 #include<vector>
 #include"Scene.h"
@@ -12,6 +12,9 @@ extern IMAGE img_platform_small; // 小型平台图片
 
 extern SceneManager scene_manager;               // 场景管理器对象
 extern std::vector<Platform> platform_list; // 平台列表
+extern Player* player_1; // 玩家1
+extern Player* player_2; // 玩家2
+
 extern void putimage_alpha(const Camera& camera, int x, int y, IMAGE* img);   //播放动画
 class GameScene : public Scene
 {
@@ -20,6 +23,7 @@ public:
 	~GameScene() = default;
 
 	void on_enter() {
+		
 		/*
 		为防止抖动时出现黑边,天空图片大于窗口尺寸
 		相减得到负值使得图片在窗口外加载得以包裹整个窗口
@@ -66,9 +70,13 @@ public:
 		small_platform_3.shape.left = (float)small_platform_3.render_pos.x + 40;
 		small_platform_3.shape.right = (float)small_platform_3.render_pos.x + img_platform_small.getwidth() - 40;
 		small_platform_3.shape.y = (float)small_platform_3.render_pos.y + img_platform_small.getheight() / 2;
+
+		player_1->set_position(200, 50);
+		player_2->set_position(975, 50);
 	}
 	void on_update(int delta) {
-		
+		player_1->on_update(delta);
+		player_2->on_update(delta);
 	}
 	void on_draw(const Camera& camera) {
 		putimage_alpha(camera, pos_img_sky.x, pos_img_sky.y, &img_sky);
@@ -80,8 +88,12 @@ public:
 			settextcolor(RGB(255, 0, 0));
 			outtextxy(15, 15, _T("已开启调试模式,按Q关闭"));
 		}
+		player_1->on_draw(camera);
+		player_2->on_draw(camera);
 	}
 	void on_input(const ExMessage& msg) {
+		player_1->on_input(msg);
+		player_2->on_input(msg);
 		switch (msg.message) {
 		case WM_KEYUP:
 		if (msg.vkcode == 0x51) {
