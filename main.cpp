@@ -89,6 +89,10 @@ Scene* game_scene = nullptr;              // 游戏场景指针
 Scene* selector_scene = nullptr;          // 选角场景指针
 SceneManager scene_manager;               // 场景管理器对象
 Camera main_camera;                       // 主摄像机对象
+
+std::vector<Platform> platform_list; // 平台列表
+
+bool is_debug = false;
 int main() {
     ExMessage msg;
     const int FPS = 60;
@@ -133,6 +137,7 @@ int main() {
             Sleep(1000 / FPS - frame_delta_time);
 
 
-        EndBatchDraw();
+        
     }
+    EndBatchDraw();
 }

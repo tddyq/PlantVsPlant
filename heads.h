@@ -10,7 +10,7 @@
 #include"GameScene.h"
 #include"SceneManager.h"
 #include"SelectorScene.h"
-
+#include"Platform.h"
 #include"Atlas.h"
 
 // 主菜单与选角界面
@@ -103,9 +103,12 @@ extern Scene* selector_scene;          // 选角场景指针
 extern SceneManager scene_manager;               // 场景管理器对象
 extern Camera main_camera;                // 主摄像机对象
 
+extern std::vector<Platform> platform_list; // 平台列表
+
 inline void flip_image(IMAGE* src, IMAGE* dst);
 void flip_atlas(Atlas& src, Atlas& dst);
 void putimage_alpha(int x, int y, IMAGE* img);   //播放动画
 void putimage_alpha(const Camera& camera,int x, int y, IMAGE* img);   //播放动画
 void putimage_alpha(int dst_x, int dst_y, int width, int height, IMAGE* img, int src_x, int src_y);
 void load_game_resources();
+void line(const Camera& camera, int x1, int y1, int x2, int y2);
