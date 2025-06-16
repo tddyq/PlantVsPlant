@@ -15,6 +15,10 @@ public:
 	void set_damage(int val) {
 		damage = val;
 	}
+	void set_position(float x, float y) {
+		position.x = x;
+		position.y = y;
+	}
 	const Vector2& get_position() const {
 		return position;
 	}

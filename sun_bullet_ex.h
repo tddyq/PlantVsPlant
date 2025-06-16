@@ -1,6 +1,8 @@
 #pragma once
 #include"bullet.h"
 #include"Animation.h"
+
+
 extern Camera main_camera;                // 主摄像机对象
 extern Atlas atlas_sun_ex;                       // 特殊日光动画图集
 extern Atlas atlas_sun_ex_explode;               // 特殊日光爆炸动画图集
@@ -81,9 +83,12 @@ public:
 				(int)position.y + (int)explode_render_offset.y);
 		}
 	}
+
 private:
 	Animation animation_idle;        //日光炸弹默认动画
 	Animation animation_explode;     //日光炸弹爆炸动画
+
+
 	Vector2 explode_render_offset;   //爆炸动画偏移量
 };
 

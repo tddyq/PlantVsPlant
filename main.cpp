@@ -91,6 +91,8 @@ SceneManager scene_manager;               // 场景管理器对象
 Camera main_camera;                       // 主摄像机对象
 
 std::vector<Platform> platform_list; // 平台列表
+std::vector<bullet*> bullet_list; // 子弹列表
+
 Player* player_1; // 玩家1
 Player* player_2; // 玩家2
 bool is_debug = false;

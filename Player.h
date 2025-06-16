@@ -13,6 +13,12 @@ public:
 
 	Player(){
 		current_animation = &animation_idle_right; // 默认朝向右侧的待机动画
+
+		timer_attack_cd.set_wait_time(attack_cd);
+		timer_attack_cd.set_one_shot(true);
+		timer_attack_cd.set_callback([&]() {
+			can_attack = true; // 攻击冷却结束，允许攻击
+			});
 	}
 
 
@@ -33,6 +39,8 @@ public:
 		}
 		current_animation->on_update(delta);
 		move_and_collide(delta); // 更新位置和碰撞检测
+
+		timer_attack_cd.on_update(delta); // 更新攻击冷却计时器
 	}
 	virtual void on_draw(const Camera& camera) {
 		current_animation->on_draw(camera, position.x, position.y);
@@ -58,6 +66,17 @@ public:
 				case 0x57:
 					on_jump();
 					break;
+				case 0x46:
+					if (can_attack) {
+						on_attack();
+						can_attack = false;
+						timer_attack_cd.restart(); // 重置攻击冷却计时器
+					}
+				case 0x47:
+					if (mp >= 100) {
+						on_attack_ex();
+						mp = 0;
+					}
 				default:
 					break;
 				}
@@ -76,6 +95,17 @@ public:
 				case VK_UP:
 					on_jump();
 					break;
+				case VK_OEM_PERIOD:
+					if (can_attack) {
+						on_attack();
+						can_attack = false;
+						timer_attack_cd.restart(); // 重置攻击冷却计时器
+					}
+				case VK_OEM_2:
+					if (mp >= 100) {
+						on_attack_ex();
+						mp = 0;
+					}
 				default:
 					break;
 				}
@@ -124,16 +154,21 @@ public:
 		}
 	}
 	virtual void on_run(float distance) {
+		if (is_attack_ex) {
+			return;
+		}
 		position.x += distance;
 	}
 	virtual void on_jump() {
-
-		if (velocity.y != 0) {
+		
+		if (velocity.y != 0 || is_attack_ex) {
 			return;
 		}
 		velocity.y += jump_velocity;
 
 	}
+	virtual void on_attack(){}
+	virtual void on_attack_ex(){}
 	void set_position(float x, float y) {
 		position.x = x;
 		position.y = y;
@@ -141,6 +176,18 @@ public:
 	}
 	void set_id(PlayerID player_id) {
 		id = player_id;
+	}
+
+	// 获取位置坐标函数 (注意拼写)
+	const Vector2& get_postion() const
+	{
+		return position;
+	}
+
+	// 获取物体尺寸函数
+	const Vector2& get_size() const
+	{
+		return size;
 	}
 protected:
 	void move_and_collide(int delta) {
@@ -185,5 +232,14 @@ protected:
 	bool is_right_key_down = false;
 
 	bool is_facing_right = true;    // 是否面向右侧
+
+	int attack_cd = 500; // 攻击冷却时间（毫秒）
+	bool can_attack = true;
+	Timer timer_attack_cd;
+	
+	bool is_attack_ex = false; // 是否使用特殊攻击
+
+	int mp = 0;
+	int hp = 100;
 };
 
