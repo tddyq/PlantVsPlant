@@ -22,7 +22,7 @@ public:
 		position.y = 0;
 	}
 
-	void on_date(int delta) {
+	void on_update(int delta) {
 		timer_shake.on_update(delta); //更新抖动计时器
 
 		if (is_shaking) {

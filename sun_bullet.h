@@ -38,6 +38,7 @@ public:
 		if (valid) {
 			velocity.y += grivate * delta;
 			position.y += velocity.y * (float)delta;
+			position.x += velocity.x * (float)delta;
 		}
 		if (!valid) {
 			animation_explode.on_update(delta);

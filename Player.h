@@ -37,6 +37,9 @@ public:
 			current_animation = is_facing_right ? &animation_idle_right : &animation_idle_left;	
 
 		}
+		if (current_animation == NULL) {
+			std::cout << "current_animation is NULL" << std::endl;
+		}
 		current_animation->on_update(delta);
 		move_and_collide(delta); // 更新位置和碰撞检测
 
@@ -223,6 +226,8 @@ protected:
 	Animation animation_idle_right; // 待机动画（向右）
 	Animation animation_run_left;   // 向左跑步动画
 	Animation animation_run_right;  //向右跑步动画
+	Animation animation_attack_ex_left;  // 朝向左的特殊攻击动画
+	Animation animation_attack_ex_right; // 朝向右的特殊攻击动画
 
 	Animation* current_animation = nullptr;
 

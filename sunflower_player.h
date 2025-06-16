@@ -92,13 +92,17 @@ public:
 		bullet_position.y = position.y;
 
 		bullet->set_position(bullet_position.x, bullet_position.y);
-		bullet->set_velocity(is_facing_right ? velocity_sun.x : -velocity_sun.x, velocity_sun.y);;
+		bullet->set_velocity((is_facing_right ? velocity_sun.x : -velocity_sun.x), velocity_sun.y);
+		
 
 		bullet->set_collide_target(id == PlayerID::P1 ? PlayerID::P2 : PlayerID::P1);
 
 		bullet->set_callback([&]() {mp += 35; });
 
 		bullet_list.push_back(bullet);
+
+		//test
+		std::cout << bullet->get_velocity().x << " " << bullet->get_velocity().y << std::endl;
 	}
 	void on_attack_ex() {
 		is_attack_ex = true;
@@ -110,7 +114,7 @@ public:
 		bullet* bullet = new sun_bullet_ex();
 		Player* target_player = (id == PlayerID::P1 ? player_2 : player_1);
 
-		Vector2 bullet_position, bullet_velocity;
+
 		Vector2 bullet_position, bullet_velocity;  // 声明子弹位置和速度向量
 
 		// 获取子弹和目标玩家的尺寸
@@ -151,11 +155,5 @@ private:
 	Timer timer_attack_ex;     //特殊攻击状态定时器
 	Timer timer_spwan_pea_ex;  //特殊子弹发射定时器
 
-	Animation animation_idle_left;      // 朝向左的默认动画
-	Animation animation_idle_right;     // 朝向右的默认动画
-	Animation animation_run_left;       // 朝向左的奔跑动画
-	Animation animation_run_right;      // 朝向右的奔跑动画
-	Animation animation_attack_ex_left;  // 朝向左的特殊攻击动画
-	Animation animation_attack_ex_right; // 朝向右的特殊攻击动画
 };
 

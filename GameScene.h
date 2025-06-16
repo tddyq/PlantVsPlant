@@ -4,6 +4,7 @@
 #include<vector>
 #include"Scene.h"
 #include"Platform.h"
+#include"bullet.h"
 // 游戏场景元素图片资源定义
 extern IMAGE img_sky;            // 天空图片
 extern IMAGE img_hills;          // 山脉图片
@@ -12,8 +13,10 @@ extern IMAGE img_platform_small; // 小型平台图片
 
 extern SceneManager scene_manager;               // 场景管理器对象
 extern std::vector<Platform> platform_list; // 平台列表
+extern std::vector<bullet*> bullet_list; // 子弹列表
 extern Player* player_1; // 玩家1
 extern Player* player_2; // 玩家2
+extern Camera main_camera;                // 主摄像机对象
 
 extern void putimage_alpha(const Camera& camera, int x, int y, IMAGE* img);   //播放动画
 class GameScene : public Scene
@@ -77,6 +80,11 @@ public:
 	void on_update(int delta) {
 		player_1->on_update(delta);
 		player_2->on_update(delta);
+
+		main_camera.on_update(delta); // 更新摄像机状态
+		for (bullet* bullet : bullet_list) {
+			bullet->on_update(delta);
+		}
 	}
 	void on_draw(const Camera& camera) {
 		putimage_alpha(camera, pos_img_sky.x, pos_img_sky.y, &img_sky);
@@ -90,6 +98,10 @@ public:
 		}
 		player_1->on_draw(camera);
 		player_2->on_draw(camera);
+
+		for (bullet* bullet : bullet_list) {
+			bullet->on_draw(camera);
+		}
 	}
 	void on_input(const ExMessage& msg) {
 		player_1->on_input(msg);

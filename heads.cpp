@@ -22,6 +22,12 @@ void flip_atlas(Atlas& src, Atlas& dst) {
 		flip_image(src.get_image(i), &img_flpipped);
 		dst.add_image(img_flpipped);
 	}
+	if (dst.get_size() == 0) {
+		std::cout << "Atlas flip failed!" << std::endl;
+	}
+	else {
+		std::cout << "Atlas flip success!" << std::endl;
+	}
 }
 //加载带透明度的图片
 void putimage_alpha(int x, int y, IMAGE* img) {

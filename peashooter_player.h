@@ -73,7 +73,7 @@ public:
 		bullet_position.x = is_facing_right
 			? position.x +size.x - bullet_size.x/2
 			: position.x + bullet_size.x / 2;
-		bullet_position.y = position.y + size.y / 2;
+		bullet_position.y = position.y /*+ size.y / 2*/;
 		bullet_velocity.x = is_facing_right ? speed : -speed;
 		bullet_velocity.y = 0;
 
@@ -113,11 +113,5 @@ private:
 	Timer timer_attack_ex;     //特殊攻击状态定时器
 	Timer timer_spwan_pea_ex;  //特殊子弹发射定时器
 
-	Animation animation_idle_left;      // 朝向左的默认动画
-	Animation animation_idle_right;     // 朝向右的默认动画
-	Animation animation_run_left;       // 朝向左的奔跑动画
-	Animation animation_run_right;      // 朝向右的奔跑动画
-	Animation animation_attack_ex_left;  // 朝向左的特殊攻击动画
-	Animation animation_attack_ex_right; // 朝向右的特殊攻击动画
 }
 ;

@@ -15,6 +15,9 @@ public:
 	void set_atlas(Atlas* new_atlas) {
 		reset();
 		atlas = new_atlas;
+		if (atlas == NULL) {
+			std::cout << "set atlas fail " << std::endl;
+		}
 	}
 	void set_loop(bool flag) {
 		is_loop = flag;
@@ -34,6 +37,9 @@ public:
 		return (idx_frame == atlas->get_size() - 1);
 	}
 	void on_update(int delta) {
+		if (atlas == nullptr) {
+			std::cout << "atlas is null" << std::endl;
+		}
 		timer += delta;
 		if (timer >= interval) {
 			timer = 0;

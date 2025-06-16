@@ -32,9 +32,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="SceneManager.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="heads.h">
       <Filter>源文件</Filter>
     </ClInclude>
@@ -91,6 +88,9 @@
     </ClInclude>
     <ClInclude Include="pea_bullet.h">
       <Filter>头文件\bullet</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneManager.h">
+      <Filter>头文件\Scene</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
