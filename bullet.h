@@ -3,6 +3,7 @@
 #include"playerID.h"
 #include<graphics.h>
 #include<functional>
+extern bool is_debug;
 class bullet
 {
 public:
@@ -44,12 +45,12 @@ public:
 	bool get_valid() {
 		return valid;
 	}
-	bool check_can_remove() {
+	bool check_can_remove()const {
 		return can_remove;
 	}
 	
 	void set_callback(std::function<void()> callback) {
-		callback = callback;
+		this->callback = callback;
 	}
 	virtual void on_collide() {
 		if (callback) {
@@ -57,13 +58,24 @@ public:
 		}
 	}
 	virtual bool check_collision(const Vector2& position, const Vector2& size) {
-		return this->position.x + this->size.x/2 >= position.x
-			&& this->position.x - this->size.x / 2 <= position.x + size.x &&
-			this->position.y + this->size.y / 2 >= position.y &&
-			this->position.y - this->size.y / 2 <= position.y + size.y;
+		bool is_collide_x = (max(this->position.x + this->size.x, position.x + size.x)
+			- min(this->position.x, position.x) <= this->size.x + size.x);
+
+		bool is_collide_y = (max(this->position.y + this->size.y, position.y + size.y)
+			- min(this->position.y, position.y) <= this->size.y + size.y);
+
+		return is_collide_x && is_collide_y;
 	}
 	virtual void on_update(int delta){}
-	virtual void on_draw(const Camera& camera)const {}
+	virtual void on_draw(const Camera& camera)const {
+		if (is_debug) {
+			setfillcolor(RGB(255,255, 255));
+			setlinecolor(RGB(255, 255, 255));
+			rectangle((int)position.x,(int)position.y,
+				(int)(position.x + size.x), (int)(position.y + size.y));
+			solidcircle((int)(position.x + size.x / 2), (int)(position.y + size.y / 2), 5);
+		}
+	}
 protected:
 	Vector2 size;                   //×Óµ¯³ß´ç
 	Vector2 position;               //×Óµ¯Î»ÖÃ

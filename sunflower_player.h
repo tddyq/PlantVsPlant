@@ -97,12 +97,10 @@ public:
 
 		bullet->set_collide_target(id == PlayerID::P1 ? PlayerID::P2 : PlayerID::P1);
 
-		bullet->set_callback([&]() {mp += 35; });
+		bullet->set_callback([&]() {mp += 35;});
 
 		bullet_list.push_back(bullet);
 
-		//test
-		std::cout << bullet->get_velocity().x << " " << bullet->get_velocity().y << std::endl;
 	}
 	void on_attack_ex() {
 		is_attack_ex = true;

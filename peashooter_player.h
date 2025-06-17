@@ -13,7 +13,7 @@ extern Atlas atlas_peashooter_attack_ex_right;   // 豌豆射手朝向右的特殊攻击动画
 extern Atlas atlas_peashooter_die_left;          // 豌豆射手朝向左的死亡动画图集
 extern Atlas atlas_peashooter_die_right;         // 豌豆射手朝向右的死亡动画图集
 
-extern std::vector<bullet*> bullet_list; // 子弹列表
+//extern std::vector<bullet*> bullet_list; // 子弹列表
 class peashooter_player : public Player
 {
 public:

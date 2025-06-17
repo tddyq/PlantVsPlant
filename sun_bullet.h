@@ -22,8 +22,8 @@ public:
 
 		IMAGE* frame_idle = animation_idle.get_frame();
 		IMAGE* frame_explode = animation_explode.get_frame();
-		explode_render_offset.x = frame_explode->getwidth() / 2.0f - frame_idle->getwidth() / 2.0f;		
-		explode_render_offset.y = frame_explode->getheight() / 2.0f - frame_idle->getheight() / 2.0f;
+		explode_render_offset.x = (-frame_explode->getwidth() + frame_idle->getwidth()) / 2;		
+		explode_render_offset.y = (-frame_explode->getheight() + frame_idle->getheight()) / 2;
 
 	}
 	~sun_bullet() = default;
@@ -53,6 +53,7 @@ public:
 		}
 	}
 	void on_draw(const Camera& camera)const {
+		
 		if (valid) {
 			animation_idle.on_draw(camera, (int)position.x, (int)position.y);
 		}
@@ -61,6 +62,7 @@ public:
 				(int)position.x + (int)explode_render_offset.x,
 				(int)position.y + (int)explode_render_offset.y);
 		}
+		bullet::on_draw(camera);
 	}
 private:
 	const float grivate = 1e-3f;

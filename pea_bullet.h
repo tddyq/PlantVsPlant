@@ -29,12 +29,14 @@ public:
 		}
 	}
 	void on_draw(const Camera& camera)const {
+		
 		if (valid) {
 			putimage_alpha(camera, (int)position.x, (int)position.y, &img_pea);
 		}
 		else {
 			animation_break.on_draw(camera, (int)position.x, (int)position.y);
 		}
+		bullet::on_draw(camera);
 	}
 	void on_collide() {
 		bullet::on_collide();

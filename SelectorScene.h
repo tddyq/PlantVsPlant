@@ -43,12 +43,16 @@ extern IMAGE img_peashooter_selector_background_left;   // Ñ¡½Ç½çÃæ³¯Ïò×óµÄÍã¶¹É
 extern IMAGE img_peashooter_selector_background_right;  // Ñ¡½Ç½çÃæ³¯ÏòÓÒµÄÍã¶¹ÉäÊÖ±³¾°Í¼Æ¬
 extern IMAGE img_sunflower_selector_background_left;   // Ñ¡½Ç½çÃæ³¯Ïò×óµÄÁúÈÕ¿û±³¾°Í¼Æ¬
 extern IMAGE img_sunflower_selector_background_right;  // Ñ¡½Ç½çÃæ³¯ÏòÓÒµÄÁúÈÕ¿û±³¾°Í¼Æ¬
+extern IMAGE img_avatar_peashooter;              // Íã¶¹ÉäÊÖÍ·ÏñÍ¼Æ¬
+extern IMAGE img_avatar_sunflower;               // ÁúÈÕ¿ûÍ·ÏñÍ¼Æ¬
 
 extern SceneManager scene_manager;               // ³¡¾°¹ÜÀíÆ÷¶ÔÏó
 extern Atlas atlas_sunflower_idle_right;         // ÁúÈÕ¿û³¯ÏòÓÒµÄÄ¬ÈÏ¶¯»­Í¼¼¯
 extern Atlas atlas_peashooter_idle_right;        // Íã¶¹ÉäÊÖ³¯ÏòÓÒµÄÄ¬ÈÏ¶¯»­Í¼¼¯
 extern Player* player_1; // Íæ¼Ò1
 extern Player* player_2; // Íæ¼Ò2
+extern IMAGE* img_player_1_avatar; // Íæ¼Ò1Í·Ïñ
+extern IMAGE* img_player_2_avatar; // Íæ¼Ò2Í·Ïñ
 
 extern void putimage_alpha(int dst_x, int dst_y, int width, int height, IMAGE* img, int src_x, int src_y);
 class SelectorScene : public Scene 
@@ -276,18 +280,24 @@ public:
 		switch (player_type_1) {
 		case PlayerType::Peashooter:
 			player_1 = new peashooter_player();
+			img_player_1_avatar = &img_avatar_peashooter; // ÉèÖÃÍæ¼Ò1Í·Ïñ
 			break;
 		case PlayerType::Sunflower:
 			player_1 = new sunflower_player();
+			img_player_1_avatar = &img_avatar_sunflower; // ÉèÖÃÍæ¼Ò2Í·Ïñ
+			break;
 		}
 		player_1->set_id(PlayerID::P1);
 
 		switch (player_type_2) {
 		case PlayerType::Peashooter:
 			player_2 = new peashooter_player();
+			img_player_2_avatar = &img_avatar_peashooter; // ÉèÖÃÍæ¼Ò2Í·Ïñ
 			break;
 		case PlayerType::Sunflower:
 			player_2 = new sunflower_player();
+			img_player_2_avatar = &img_avatar_sunflower; // ÉèÖÃÍæ¼Ò2Í·Ïñ
+			break;
 		}
 		player_2->set_id(PlayerID::P2);
 	}

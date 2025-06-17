@@ -95,6 +95,9 @@ std::vector<bullet*> bullet_list; // 子弹列表
 
 Player* player_1; // 玩家1
 Player* player_2; // 玩家2
+IMAGE* img_player_1_avatar; // 玩家1头像
+IMAGE* img_player_2_avatar; // 玩家2头像
+
 bool is_debug = false;
 int main() {
     ExMessage msg;

@@ -2,10 +2,14 @@
 #include <graphics.h>
 #include"Vector2.h"
 #include"Animation.h"
+#include"bullet.h"
 #include"PlayerID.h"
 #include"Platform.h"
-
+extern void putimage_alpha(const Camera& camera, int x, int y, IMAGE* img);
+extern void sketch_image(IMAGE* src, IMAGE* dst);
 extern std::vector<Platform> platform_list; // 平台列表
+extern std::vector<bullet*> bullet_list; // 子弹列表
+extern bool is_debug;
 class Camera;
 class Player
 {
@@ -19,6 +23,22 @@ public:
 		timer_attack_cd.set_callback([&]() {
 			can_attack = true; // 攻击冷却结束，允许攻击
 			});
+
+		// 设置无敌状态定时器
+		timer_invulnerable.set_wait_time(750);         // 设置750毫秒的等待时间
+		timer_invulnerable.set_one_shot(true);         // 设置为单次触发模式
+		timer_invulnerable.set_callback([&]()          // 设置定时器结束后的回调函数
+			{
+				is_invulnerable = false;                   // 取消无敌状态
+			});
+
+		// 设置无敌状态闪烁效果定时器
+		timer_invulnerable_blink.set_wait_time(75);    // 设置75毫秒的等待时间
+		timer_invulnerable_blink.set_callback([&]()    // 设置定时器回调函数
+			{
+				// 切换轮廓帧显示状态（实现闪烁效果）
+				is_showing_sketch_frame = !is_showing_sketch_frame;
+			});
 	}
 
 
@@ -28,7 +48,10 @@ public:
 		int direction = is_left_key_down - is_right_key_down;
 
 		if (direction != 0) {
-			is_facing_right = (direction > 0);
+			if (!is_attack_ex) { // 如果正在执行特殊攻击，则不允许移动
+				is_facing_right = (direction > 0);
+			}
+			
 			current_animation = is_facing_right ? &animation_run_right : &animation_run_left;
 			float distance = direction * run_velocity * delta; //这一帧中玩家的移动距离
 			on_run(distance); // 更新玩家位置
@@ -37,16 +60,39 @@ public:
 			current_animation = is_facing_right ? &animation_idle_right : &animation_idle_left;	
 
 		}
+		if (is_attack_ex) {
+			current_animation = is_facing_right ? &animation_attack_ex_right : &animation_attack_ex_left;
+		}
 		if (current_animation == NULL) {
 			std::cout << "current_animation is NULL" << std::endl;
 		}
 		current_animation->on_update(delta);
-		move_and_collide(delta); // 更新位置和碰撞检测
+		
 
 		timer_attack_cd.on_update(delta); // 更新攻击冷却计时器
+		timer_invulnerable.on_update(delta); // 更新无敌状态计时器
+		timer_invulnerable_blink.on_update(delta); // 更新无敌状态闪烁计时器
+		
+
+		if (is_showing_sketch_frame) {
+			sketch_image(current_animation->get_frame(), &img_sketch);
+		}
+
+		move_and_collide(delta); // 更新位置和碰撞检测
 	}
 	virtual void on_draw(const Camera& camera) {
-		current_animation->on_draw(camera, position.x, position.y);
+		if (is_invulnerable && is_showing_sketch_frame && hp > 0) {
+			putimage_alpha(camera, position.x, position.y,&img_sketch);
+		}
+		else {
+			current_animation->on_draw(camera, position.x, position.y);
+		}
+		
+		if (is_debug) {
+			setlinecolor(RGB(0, 125, 255));
+			rectangle((int)position.x, (int)position.y,
+				(int)(position.x + size.x), (int)(position.y + size.y));
+		}
 	}
 	virtual void on_input(const ExMessage& msg) {
 		//第一层判断按键状态
@@ -75,11 +121,13 @@ public:
 						can_attack = false;
 						timer_attack_cd.restart(); // 重置攻击冷却计时器
 					}
+					break;
 				case 0x47:
 					if (mp >= 100) {
 						on_attack_ex();
 						mp = 0;
 					}
+					break;
 				default:
 					break;
 				}
@@ -104,11 +152,13 @@ public:
 						can_attack = false;
 						timer_attack_cd.restart(); // 重置攻击冷却计时器
 					}
+					break;
 				case VK_OEM_2:
 					if (mp >= 100) {
 						on_attack_ex();
 						mp = 0;
 					}
+					break;
 				default:
 					break;
 				}
@@ -180,17 +230,19 @@ public:
 	void set_id(PlayerID player_id) {
 		id = player_id;
 	}
-
-	// 获取位置坐标函数 (注意拼写)
 	const Vector2& get_postion() const
 	{
 		return position;
 	}
-
-	// 获取物体尺寸函数
 	const Vector2& get_size() const
 	{
 		return size;
+	}
+	const int get_mp() const {
+		return mp;
+	}
+	const int get_hp() const {
+		return hp;
 	}
 protected:
 	void move_and_collide(int delta) {
@@ -204,15 +256,38 @@ protected:
 					<= size.x + (shape.right - shape.left));
 				bool is_collide_y = (shape.y >= position.y && shape.y <= position.y + size.y);
 				if (is_collide_x && is_collide_y) {
-					position.y = shape.y - size.y;
-					velocity.y = 0; // 重置垂直速度
+					float delta_pos_y = velocity.y * delta;
+					float last_tick_foot_pos_y = position.y + size.y - delta_pos_y; // 上一帧脚部位置
+					if (last_tick_foot_pos_y <= shape.y) {
+						position.y = shape.y - size.y;
+						velocity.y = 0; // 重置垂直速度
 
-					break;
+						break;
+					}
+					
 				}
 			}
 		}
+		if (!is_invulnerable) {
+			for (bullet* bullet : bullet_list) {
+				if (!bullet->get_valid() || bullet->get_collide_target() != id) {
+					continue;   // 如果子弹无效或不属于当前玩家，则跳过
+				}
+				if (bullet->check_collision(position, size)) {
+					make_invulnerable(); // 触发无敌状态
+					bullet->on_collide(); // 处理子弹碰撞
+					bullet->set_vaild(false); // 设置子弹为无效状态
+					hp -= bullet->get_damage(); // 减少玩家生命值
+				}
+			}
+		}
+		
 	}
-
+	void make_invulnerable() {
+		is_invulnerable = true; // 设置无敌状态
+		timer_invulnerable.restart(); // 重置无敌状态计时器
+		timer_invulnerable_blink.restart(); // 重置无敌状态闪烁计时器
+	}
 protected:
 	const float run_velocity = 0.55f; // 跑步速度
 	const float gravity = 1.6e-3f; // 重力加速度
@@ -246,5 +321,11 @@ protected:
 
 	int mp = 0;
 	int hp = 100;
+
+	IMAGE img_sketch; // 剪影图片
+	bool is_invulnerable = false;           // 是否处于无敌状态
+	bool is_showing_sketch_frame = false;   //当前帧是否显示剪影
+	Timer timer_invulnerable;               // 无敌状态计时器
+	Timer timer_invulnerable_blink;         // 无敌状态闪烁计时器
 };
 

@@ -74,6 +74,7 @@ public:
 		}
 	}
 	void on_draw(const Camera& camera)const {
+		bullet::on_draw(camera);
 		if (valid) {
 			animation_idle.on_draw(camera, (int)position.x, (int)position.y);
 		}
@@ -82,6 +83,7 @@ public:
 				(int)position.x + (int)explode_render_offset.x,
 				(int)position.y + (int)explode_render_offset.y);
 		}
+		bullet::on_draw(camera);
 	}
 
 private:

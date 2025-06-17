@@ -92,5 +92,8 @@
     <ClInclude Include="SceneManager.h">
       <Filter>头文件\Scene</Filter>
     </ClInclude>
+    <ClInclude Include="status_bar.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

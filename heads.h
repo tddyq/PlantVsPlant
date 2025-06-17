@@ -108,6 +108,10 @@ extern std::vector<Platform> platform_list; // 平台列表
 extern std::vector<bullet*> bullet_list; // 子弹列表
 extern Player* player_1; // 玩家1
 extern Player* player_2; // 玩家2
+extern IMAGE* img_player_1_avatar; // 玩家1头像
+extern IMAGE* img_player_2_avatar; // 玩家2头像
+extern bool is_debug;
+
 
 inline void flip_image(IMAGE* src, IMAGE* dst);
 void flip_atlas(Atlas& src, Atlas& dst);
@@ -116,3 +120,4 @@ void putimage_alpha(const Camera& camera,int x, int y, IMAGE* img);   //播放动画
 void putimage_alpha(int dst_x, int dst_y, int width, int height, IMAGE* img, int src_x, int src_y);
 void load_game_resources();
 void line(const Camera& camera, int x1, int y1, int x2, int y2);
+void sketch_image(IMAGE* src, IMAGE* dst);
