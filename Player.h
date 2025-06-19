@@ -13,6 +13,9 @@ extern void sketch_image(IMAGE* src, IMAGE* dst);
 extern Atlas atlas_run_effect;                   // 奔跑特效动画图集
 extern Atlas atlas_jump_effect;                  // 跳跃特效动画图集
 extern Atlas atlas_land_effect;                  // 落地特效动画图集
+// 玩家光标指示图片
+extern IMAGE img_1P_cursor;      // 1P 指示光标图片
+extern IMAGE img_2P_cursor;      // 2P 指示光标图片
 extern std::vector<Platform> platform_list; // 平台列表
 extern std::vector<bullet*> bullet_list; // 子弹列表
 extern bool is_debug;
@@ -21,8 +24,9 @@ class Player
 {
 public:
 
-	Player(){
-		current_animation = &animation_idle_right; // 默认朝向右侧的待机动画
+	Player(bool facing_right = true):is_facing_right(facing_right){
+
+		current_animation = is_facing_right ?&animation_idle_right:&animation_idle_left; // 默认朝向右侧的待机动画
 
 		// 跳跃特效动画设置
 		animation_jump_effect .set_atlas(&atlas_jump_effect);
@@ -89,6 +93,12 @@ public:
 				// 生成新粒子(生命周期150帧)
 				particle_list.emplace_back(particle_position, &atlas_run_effect, 150);
 			});
+
+		timer_cursor_visibility.set_wait_time(2500);  
+		timer_cursor_visibility.set_one_shot(true);
+		timer_cursor_visibility.set_callback([&]() {
+			is_cursor_visible = false;
+			});
 	}
 
 
@@ -113,6 +123,9 @@ public:
 		if (is_attack_ex) {
 			current_animation = is_facing_right ? &animation_attack_ex_right : &animation_attack_ex_left;
 		}
+		if (hp <= 0) {
+			current_animation = is_facing_right ? &animation_die_right : &animation_die_left; // 死亡时使用死亡动画
+		}
 		if (current_animation == NULL) {
 			std::cout << "current_animation is NULL" << std::endl;
 		}
@@ -124,6 +137,7 @@ public:
 		timer_invulnerable.on_update(delta);           // 更新无敌状态计时器
 		timer_invulnerable_blink.on_update(delta);     // 更新无敌状态闪烁计时器
 		timer_run_effect_generation.on_update(delta);  // 更新跑步特效生成计时器
+		timer_cursor_visibility.on_update(delta);      // 更新光标可见性计时器
 		if (hp <= 0) {
 			timer_die_effect_generation.on_update(delta); // 更新死亡特效生成计时器
 		}
@@ -169,6 +183,20 @@ public:
 			setlinecolor(RGB(0, 125, 255));
 			rectangle((int)position.x, (int)position.y,
 				(int)(position.x + size.x), (int)(position.y + size.y));
+		}
+		if (is_cursor_visible)
+		{
+			switch (id)
+			{
+			case PlayerID::P1:
+				putimage_alpha(camera, (int)(position.x + (size.x - img_1P_cursor.getwidth()) / 2),
+					(int)(position.y - img_1P_cursor.getheight()), &img_1P_cursor);
+				break;
+			case PlayerID::P2:
+				putimage_alpha(camera, (int)(position.x + (size.x - img_2P_cursor.getwidth()) / 2),
+					(int)(position.y - img_2P_cursor.getheight()), &img_2P_cursor);
+				break;
+			}
 		}
 	}
 	virtual void on_input(const ExMessage& msg) {
@@ -347,7 +375,9 @@ protected:
 
 		velocity.y += gravity * delta;
 		position += velocity * (float)delta;
-
+		if (hp <= 0) {
+			return;
+		}
 		if (velocity.y > 0) {
 			for (const Platform& platform : platform_list) {
 				const Platform::CollisionShape& shape = platform.shape;
@@ -374,13 +404,18 @@ protected:
 		if (!is_invulnerable) {
 			for (bullet* bullet : bullet_list) {
 				if (!bullet->get_valid() || bullet->get_collide_target() != id) {
-					continue;   // 如果子弹无效或不属于当前玩家，则跳过
+					continue;                                                    // 如果子弹无效或不属于当前玩家，则跳过
 				}
 				if (bullet->check_collision(position, size)) {
-					make_invulnerable(); // 触发无敌状态
-					bullet->on_collide(); // 处理子弹碰撞
-					bullet->set_vaild(false); // 设置子弹为无效状态
-					hp -= bullet->get_damage(); // 减少玩家生命值
+					make_invulnerable();                                         // 触发无敌状态
+					bullet->on_collide();                                        // 处理子弹碰撞
+					bullet->set_vaild(false);                                    // 设置子弹为无效状态
+					hp -= bullet->get_damage();                                  // 减少玩家生命值
+					last_hurt_direction = bullet->get_position() - position;
+					if (hp <= 0) {
+						velocity.x = last_hurt_direction.x < 0 ? 0.35f : -0.35f; // 死亡时根据受击方向设置水平速度
+						velocity.y = -1.0f;
+					}
 				}
 			}
 		}
@@ -408,6 +443,8 @@ protected:
 	Animation animation_attack_ex_right;       // 朝向右的特殊攻击动画
 	Animation animation_jump_effect;           // 跳跃特效动画
 	Animation animation_land_effect;           // 落地特效动画
+	Animation animation_die_left;              // 朝向左的死亡动画
+	Animation animation_die_right;             // 朝向右的死亡动画
 
 	bool is_jump_effect_visible;
 	bool is_land_effect_visible;
@@ -443,5 +480,10 @@ protected:
 
 	Timer timer_run_effect_generation;      // 跑步特效生成计时器
 	Timer timer_die_effect_generation;      // 死亡特效生成计时器
+
+	bool is_cursor_visible = true;          // 玩家光标指示器是否可见
+	Timer timer_cursor_visibility;          // 玩家光标可见性定时器
+
+	Vector2 last_hurt_direction;            //最后一次受击方向
 };
 

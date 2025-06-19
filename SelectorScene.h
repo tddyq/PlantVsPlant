@@ -291,15 +291,17 @@ public:
 
 		switch (player_type_2) {
 		case PlayerType::Peashooter:
-			player_2 = new peashooter_player();
+			player_2 = new peashooter_player(false);
 			img_player_2_avatar = &img_avatar_peashooter; // 设置玩家2头像
 			break;
 		case PlayerType::Sunflower:
-			player_2 = new sunflower_player();
+			player_2 = new sunflower_player(false);
 			img_player_2_avatar = &img_avatar_sunflower; // 设置玩家2头像
 			break;
 		}
 		player_2->set_id(PlayerID::P2);
+
+		mciSendString(_T("stop bgm_menu"), NULL, 0, NULL); // 停止主菜单背景音乐
 	}
 private:
 	enum class PlayerType {
