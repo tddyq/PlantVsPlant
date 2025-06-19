@@ -2,11 +2,17 @@
 #include <graphics.h>
 #include"Vector2.h"
 #include"Animation.h"
+#include"Atlas.h"
 #include"bullet.h"
 #include"PlayerID.h"
 #include"Platform.h"
+#include"Particle.h"
+
 extern void putimage_alpha(const Camera& camera, int x, int y, IMAGE* img);
 extern void sketch_image(IMAGE* src, IMAGE* dst);
+extern Atlas atlas_run_effect;                   // 奔跑特效动画图集
+extern Atlas atlas_jump_effect;                  // 跳跃特效动画图集
+extern Atlas atlas_land_effect;                  // 落地特效动画图集
 extern std::vector<Platform> platform_list; // 平台列表
 extern std::vector<bullet*> bullet_list; // 子弹列表
 extern bool is_debug;
@@ -17,6 +23,24 @@ public:
 
 	Player(){
 		current_animation = &animation_idle_right; // 默认朝向右侧的待机动画
+
+		// 跳跃特效动画设置
+		animation_jump_effect .set_atlas(&atlas_jump_effect);
+		animation_jump_effect.set_interval(25);
+		animation_jump_effect.set_loop(false);
+		animation_jump_effect.set_callback([&]()
+			{
+				is_jump_effect_visible = false;
+			});
+
+		// 落地特效动画设置
+		animation_land_effect.set_atlas(&atlas_land_effect);
+		animation_land_effect.set_interval(50);
+		animation_land_effect.set_loop(false);
+		animation_land_effect.set_callback([&]()
+			{
+				is_land_effect_visible = false;
+			});
 
 		timer_attack_cd.set_wait_time(attack_cd);
 		timer_attack_cd.set_one_shot(true);
@@ -39,6 +63,32 @@ public:
 				// 切换轮廓帧显示状态（实现闪烁效果）
 				is_showing_sketch_frame = !is_showing_sketch_frame;
 			});
+
+		// 设置跑步特效生成定时器
+		timer_run_effect_generation.set_wait_time(75);  // 设置75毫秒间隔
+		timer_run_effect_generation.set_callback([&]()  // 设置回调函数(引用捕获)
+			{
+				Vector2 particle_position;                   // 粒子位置向量
+				IMAGE* frame = atlas_run_effect.get_image(0); // 获取跑步特效第一帧
+				// 计算粒子居中位置
+				particle_position.x = position.x + (size.x - frame->getwidth()) / 2;
+				particle_position.y = position.y + size.y - frame->getheight();
+				// 生成新粒子并添加到列表(生命周期45帧)
+				particle_list.emplace_back(particle_position, &atlas_run_effect, 45);
+			});
+
+		// 设置死亡特效生成定时器
+		timer_die_effect_generation.set_wait_time(35);   // 设置更短的35毫秒间隔
+		timer_die_effect_generation.set_callback([&]()   // 设置回调函数
+			{
+				Vector2 particle_position;                   // 粒子位置向量
+				IMAGE* frame = atlas_run_effect.get_image(0); // 获取同一图集的第一帧
+				// 使用相同的居中算法计算位置
+				particle_position.x = position.x + (size.x - frame->getwidth()) / 2;
+				particle_position.y = position.y + size.y - frame->getheight();
+				// 生成新粒子(生命周期150帧)
+				particle_list.emplace_back(particle_position, &atlas_run_effect, 150);
+			});
 	}
 
 
@@ -58,7 +108,7 @@ public:
 		}
 		else {
 			current_animation = is_facing_right ? &animation_idle_right : &animation_idle_left;	
-
+			timer_run_effect_generation.pause(); // 暂停跑步特效生成计时器
 		}
 		if (is_attack_ex) {
 			current_animation = is_facing_right ? &animation_attack_ex_right : &animation_attack_ex_left;
@@ -67,12 +117,28 @@ public:
 			std::cout << "current_animation is NULL" << std::endl;
 		}
 		current_animation->on_update(delta);
-		
+		animation_jump_effect.on_update(delta);        // 更新跳跃特效动画
+		animation_land_effect.on_update(delta);        // 更新落地特效动画
 
-		timer_attack_cd.on_update(delta); // 更新攻击冷却计时器
-		timer_invulnerable.on_update(delta); // 更新无敌状态计时器
-		timer_invulnerable_blink.on_update(delta); // 更新无敌状态闪烁计时器
-		
+		timer_attack_cd.on_update(delta);              // 更新攻击冷却计时器
+		timer_invulnerable.on_update(delta);           // 更新无敌状态计时器
+		timer_invulnerable_blink.on_update(delta);     // 更新无敌状态闪烁计时器
+		timer_run_effect_generation.on_update(delta);  // 更新跑步特效生成计时器
+		if (hp <= 0) {
+			timer_die_effect_generation.on_update(delta); // 更新死亡特效生成计时器
+		}
+		//删除粒子列表中失效的粒子并对剩下的例子更新
+		particle_list.erase(std::remove_if(
+			particle_list.begin(), particle_list.end(),
+			[](const Particle& particle) {
+				return !particle.check_valid(); // 删除无效的粒子
+			}
+		),
+			particle_list.end()
+		);
+		for (Particle& particle : particle_list) {
+			particle.on_update(delta); // 更新每个粒子
+		}
 
 		if (is_showing_sketch_frame) {
 			sketch_image(current_animation->get_frame(), &img_sketch);
@@ -81,6 +147,17 @@ public:
 		move_and_collide(delta); // 更新位置和碰撞检测
 	}
 	virtual void on_draw(const Camera& camera) {
+		if (is_jump_effect_visible) { // 如果跳跃特效可见，则绘制跳跃特效
+			animation_jump_effect.on_draw(camera, jump_effect_position.x, jump_effect_position.y);
+		}
+		if (is_land_effect_visible) {
+			animation_land_effect.on_draw(camera, land_effect_position.x, land_effect_position.y);
+		}
+
+		for (Particle& particle : particle_list) {
+			particle.on_draw(camera); // 绘制每个粒子
+		}
+		
 		if (is_invulnerable && is_showing_sketch_frame && hp > 0) {
 			putimage_alpha(camera, position.x, position.y,&img_sketch);
 		}
@@ -211,6 +288,7 @@ public:
 			return;
 		}
 		position.x += distance;
+		timer_run_effect_generation.resume();
 	}
 	virtual void on_jump() {
 		
@@ -219,6 +297,19 @@ public:
 		}
 		velocity.y += jump_velocity;
 
+		is_jump_effect_visible = true;
+		animation_jump_effect.reset(); // 重置跳跃特效动画
+		IMAGE* effect_frame = animation_jump_effect.get_frame();
+		jump_effect_position.x = position.x + (size.x - effect_frame->getwidth()) / 2; // 居中跳跃特效位置
+		jump_effect_position.y = position.y + size.y - effect_frame->getheight();      // 跳跃特效位置在玩家脚下
+	
+	}
+	virtual void on_land() {
+		is_land_effect_visible = true;
+		animation_land_effect.reset(); // 重置跳跃特效动画
+		IMAGE* effect_frame = animation_land_effect.get_frame();
+		land_effect_position.x = position.x + (size.x - effect_frame->getwidth()) / 2; // 居中跳跃特效位置
+		land_effect_position.y = position.y + size.y - effect_frame->getheight();      // 跳跃特效位置在玩家脚下
 	}
 	virtual void on_attack(){}
 	virtual void on_attack_ex(){}
@@ -230,13 +321,19 @@ public:
 	void set_id(PlayerID player_id) {
 		id = player_id;
 	}
-	const Vector2& get_postion() const
+	const Vector2& get_position() const
 	{
 		return position;
 	}
 	const Vector2& get_size() const
 	{
 		return size;
+	}
+	const void set_hp(int new_hp) {
+		hp = new_hp;
+	}
+	const void set_mp(int new_mp) {
+		mp = new_mp;
 	}
 	const int get_mp() const {
 		return mp;
@@ -246,6 +343,8 @@ public:
 	}
 protected:
 	void move_and_collide(int delta) {
+		float last_velocity = velocity.y; // 保存上一帧的垂直速度
+
 		velocity.y += gravity * delta;
 		position += velocity * (float)delta;
 
@@ -261,6 +360,10 @@ protected:
 					if (last_tick_foot_pos_y <= shape.y) {
 						position.y = shape.y - size.y;
 						velocity.y = 0; // 重置垂直速度
+
+						if (last_velocity != 0) {
+							on_land(); // 触发落地事件
+						}
 
 						break;
 					}
@@ -297,13 +400,21 @@ protected:
 	Vector2 position;
 	Vector2 velocity; // 速度向量
 
-	Animation animation_idle_left;  // 待机动画（向左）
-	Animation animation_idle_right; // 待机动画（向右）
-	Animation animation_run_left;   // 向左跑步动画
-	Animation animation_run_right;  //向右跑步动画
-	Animation animation_attack_ex_left;  // 朝向左的特殊攻击动画
-	Animation animation_attack_ex_right; // 朝向右的特殊攻击动画
+	Animation animation_idle_left;             // 待机动画（向左）
+	Animation animation_idle_right;            // 待机动画（向右）
+	Animation animation_run_left;              // 向左跑步动画
+	Animation animation_run_right;             //向右跑步动画
+	Animation animation_attack_ex_left;        // 朝向左的特殊攻击动画
+	Animation animation_attack_ex_right;       // 朝向右的特殊攻击动画
+	Animation animation_jump_effect;           // 跳跃特效动画
+	Animation animation_land_effect;           // 落地特效动画
 
+	bool is_jump_effect_visible;
+	bool is_land_effect_visible;
+	             
+	Vector2 jump_effect_position;              // 跳跃特效位置
+	Vector2 land_effect_position;              // 落地特效位置
+	             
 	Animation* current_animation = nullptr;
 
 	PlayerID id = PlayerID::P1;
@@ -327,5 +438,10 @@ protected:
 	bool is_showing_sketch_frame = false;   //当前帧是否显示剪影
 	Timer timer_invulnerable;               // 无敌状态计时器
 	Timer timer_invulnerable_blink;         // 无敌状态闪烁计时器
+
+	std::vector<Particle> particle_list;    // 粒子列表，用于特效
+
+	Timer timer_run_effect_generation;      // 跑步特效生成计时器
+	Timer timer_die_effect_generation;      // 死亡特效生成计时器
 };
 

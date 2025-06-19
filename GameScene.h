@@ -105,6 +105,19 @@ public:
 			}),
 			bullet_list.end());
 
+		const Vector2& position_player_1 = player_1->get_position();
+		const Vector2& position_player_2 = player_2->get_position();
+		if (position_player_1.y >= getheight()) {
+			player_1->set_hp(0); // 玩家1掉出屏幕，设置生命值为0
+		}
+		if (position_player_2.y >= getheight()) {
+			player_2->set_hp(0); // 玩家1掉出屏幕，设置生命值为0
+		}
+		if (player_1->get_hp() <= 0 || player_2->get_hp() <= 0) {
+			MessageBox(GetHWnd(), _T("游戏结束"), _T("测试"), MB_OK);
+			exit(0);
+		}
+
 		status_bar_p1.set_hp(player_1->get_hp());
 		status_bar_p1.set_mp(player_1->get_mp());
 		status_bar_p2.set_hp(player_2->get_hp());

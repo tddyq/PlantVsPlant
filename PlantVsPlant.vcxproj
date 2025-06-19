@@ -138,6 +138,7 @@
     <ClInclude Include="GameScene.h" />
     <ClInclude Include="heads.h" />
     <ClInclude Include="MenuScene.h" />
+    <ClInclude Include="Particle.h" />
     <ClInclude Include="peashooter_player.h" />
     <ClInclude Include="pea_bullet.h" />
     <ClInclude Include="Platform.h" />

@@ -120,7 +120,7 @@ public:
 		const Vector2& target_size = target_player->get_size();
 
 		// 获取目标玩家的位置
-		const Vector2& target_position = target_player->get_postion();
+		const Vector2& target_position = target_player->get_position();
 
 		// 设置子弹的初始位置
 		bullet_position.x = target_position.x + (target_size.x - bullet_size.x) / 2;
